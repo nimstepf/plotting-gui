@@ -8,13 +8,13 @@ Short introduction/explanation will be added
 ### Using conda
 
 ```
-conda install --yes --file requirements.txt
+conda install --yes --file src/requirements.txt
 ```
 
 ### Using pip
 
 ```
-pip install -Ur requirements.txt
+pip install -Ur src/requirements.txt
 ```
 
 
