@@ -45,7 +45,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         # Debug Mode
         #   change function of Open Button
-        self.DEBUG = True
+        self.DEBUG = False
 
         # Window Layout
         self.setWindowTitle("Harry Plotter and the Chromatography of Secrets") # TODO: find serious title
