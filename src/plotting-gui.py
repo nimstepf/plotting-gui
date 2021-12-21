@@ -73,8 +73,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.title = "Title"
         self.xlabel = "x-axis label"
         self.ylabel = "y-axis label"
-        self.toolbar = None
-        self.canv = None
+        self.filelistoflist = [] # TODO
 
         self._createPlot()
 
@@ -576,10 +575,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         read Data from selected files
         updates plot
         """
-        if self.commaAct.isChecked():
-            self.delimiter = ","
-        else:
-            self.delimiter = ";"
+        # if self.commaAct.isChecked():
+        #     self.delimiter = ","
+        # else:
+        #     self.delimiter = ";"
+
+        self.delimiter = ","
 
         if self.filelistoflist:     # TODO if self.filelistoflist != []:
             self.datalst = []
@@ -663,7 +664,7 @@ class xkcdPlot(FigureCanvasQTAgg):
 class myPlot(FigureCanvasQTAgg):
     """
     Nicolas favored plotting style
-    
+
     Adapted from https://visme.co/blog/funny-graphs/
     """
     def __init__(self, parent=None, dpi=120):
