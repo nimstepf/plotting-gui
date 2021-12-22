@@ -48,7 +48,7 @@ python plotting-gui.py
 
 ### Load and select files
 
-With the ```Open Folder``` button or ```Menu>Open```, a directory containing raw data can be selected. The .csv files of all subfolders will be listed in the ```Raw Data``` box. Selected files will be shown in the ```Selected files``` box. 
+With the ```Open Folder``` button or ```Menu>Open```, a directory containing the raw data can be selected. The .csv files of all subfolders will be listed in the ```Raw Data``` box. Selected files will be shown in the ```Selected files``` box. 
 
 With ```Number of subplots```, the number of different plots can be chosen. Using drag and drop, selected files can be added to the different plots (boxes of ```Subplots```). The order in the boxes defines the order in the resulting plot. 
 
@@ -65,9 +65,9 @@ The title and labels of the plot can be set in the ```Set Labels``` box.
 
 In the navigation bar, different predefined styles can be selected. The colorset of the ```default``` style is optimized for color-blind individuals according to _Bang Wong nature methods | VOL.8 NO.6 | JUNE 2011 | 441._ I would be thankful for some feedback about the most useful predefined styles, to simplify and shorten the list.
 
-![image][Configure subplots] With ```Configure subplots``` the borders and spacing of the plots can be adjusted.
+![image][Configure subplots] With ```Configure subplots```, the borders and spacing of the plots can be adjusted.
 
-![image][Edit axis] With ```Edit axis, curve and image parameters``` each plot can be personalized individually. After selecting the axis (subplot), limits and scaling of the axes can be adapted. Furthermore, in the ```Curves``` register, the label and line style for each curve of the subplot can be choosen.  
+![image][Edit axis] With ```Edit axis, curve and image parameters```, each plot can be personalized individually. After selecting the axis (subplot), limits and scaling of the axes can be adapted. Furthermore, in the ```Curves``` register, the label and line style for each curve of the subplot can be choosen.  
 
 ![image][Save the figue] With ```Save the figure```the plot can be exported for example as vector graphic.
 
@@ -83,7 +83,7 @@ The following functions can be called from the menu bar or by shortcuts:
 - Restart: complete restart of the application
 - Exit: close the application
 
-As standard delimiter/separator, the comma "," is defined. In the ```Delimiter``` menu, different delimiters can be selected. To avoid errors, the delimiter should be selected before loading the data. However, plotting files with different delimiters at once is not possible yet. If needed, the ```Delimiter``` menu can be extended with further separators.
+As a standard delimiter/separator, the comma "," is defined. In the ```Delimiter``` menu, different delimiters can be selected. To avoid errors, the delimiter should be selected before loading the data. However, plotting files with different delimiters at once is not possible yet. If needed, the ```Delimiter``` menu can be extended with further separators.
 
 
 ## Licensing
