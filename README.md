@@ -3,6 +3,9 @@
 Short introduction/explanation will be added
 
 ## Installation
+
+### Using conda
+
 ```
 git clone https://github.com/nimstepf/plotting-gui.git
 cd plotting-gui
@@ -12,24 +15,14 @@ conda activate plotting-gui
 conda env list
 ```
 
-
-
-
-## Install the requirements
-
-### Using conda
-
-```
-conda create --name plotting-gui --file requirements.txt
-```
-
 ### Using pip
 
 ```
+git clone https://github.com/nimstepf/plotting-gui.git
+cd plotting-gui
+
 pip install -r requirements.txt
 ```
-
-
 
 ### Running plotting-gui.py
 
