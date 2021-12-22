@@ -119,7 +119,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.updateAct = QtWidgets.QAction("&Update", self)
         self.updateAct.setShortcut("Ctrl+U")
-        self.updateAct.triggered.connect(self.changedLabels) # self.Themebox.currentValue()
+        self.updateAct.triggered.connect(self.changedLabels)
 
         # exit function
         self.exitAct = QtWidgets.QAction("&Exit", self)
@@ -251,17 +251,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         plt.clf()
         mpl.rcParams.update(mpl.rcParamsDefault)
 
-        self.ToolbarLayout.removeWidget(self.toolbar)
-        self.PlotLayout.removeWidget(self.canv)
-
-
         # special plotting style
         if self.Nsubplots == 42:
+            self.ToolbarLayout.removeWidget(self.toolbar)
+            self.PlotLayout.removeWidget(self.canv)
             self.xkcdPlot()
             return None
 
         # special plotting style
         if self.Nsubplots == 0:
+            self.ToolbarLayout.removeWidget(self.toolbar)
+            self.PlotLayout.removeWidget(self.canv)
             self.myPlot()
             return None
 
@@ -270,6 +270,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             # use style from themebox
             if value is not None and value != "default":
                 plt.style.use(value)
+
+            self.ToolbarLayout.removeWidget(self.toolbar)
+            self.PlotLayout.removeWidget(self.canv)
 
             # remove toolbar & canvas
             sip.delete(self.toolbar)
