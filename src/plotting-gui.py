@@ -119,7 +119,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.updateAct = QtWidgets.QAction("&Update", self)
         self.updateAct.setShortcut("Ctrl+U")
-        self.updateAct.triggered.connect(self.changedLabels) # self.Themebox.currentValue()
+        self.updateAct.triggered.connect(self.changedLabels)
 
         # exit function
         self.exitAct = QtWidgets.QAction("&Exit", self)
@@ -246,6 +246,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         called by: changedTitle, changedXlabel, changedYlabel, changedLabels, readData
         """
+
         # special plotting style
         if self.Nsubplots == 42:
             self.xkcdPlot()
