@@ -84,3 +84,9 @@ The following functions can be called from the menu bar or by shortcuts:
 - Exit: close the application
 
 As standard delimiter/separator, the comma "," is defined. In the ```Delimiter``` menu, different delimiters can be selected. To avoid errors, the delimiter should be selected before loading the data. However, plotting files with different delimiters at once is not possible yet. If needed, the ```Delimiter``` menu can be extended with further separators.
+
+
+## Licensing
+
+The plotting-gui is licensed [under the GPL](https://github.com/nimstepf/plotting-gui/blob/main/src/LICENSE).
+The screenshots and graphics in this repository may be used under the terms of  [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) if you prominently credit to [Nicolas Imstepf](https://github.com/nimstepf) and [ZHAW CCBIO](https://www.zhaw.ch/en/lsfm/research/chemistry-and-biotechnology/ccbio-competence-center/).
