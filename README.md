@@ -6,14 +6,22 @@ Short introduction/explanation will be added
 
 ### Using conda
 
+**Installation**
 ```
 git clone https://github.com/nimstepf/plotting-gui.git
 cd plotting-gui
 
 conda env create -f environment.yml
 conda activate plotting-gui
-conda env list
 ```
+
+**Deinstallation**
+```
+conda activate base
+conda remove --name plotting-gui --all
+```
+
+
 
 ### Using pip
 
@@ -29,6 +37,8 @@ pip install -r requirements.txt
 ```
 python plotting-gui.py
 ```
+
+
 
 
 ## User guide
