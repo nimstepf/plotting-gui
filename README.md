@@ -1,12 +1,15 @@
 # plotting-gui
 
-Short introduction/explanation will be added
+
+![image](https://user-images.githubusercontent.com/91268311/147108300-ced11974-5574-4469-90f0-2fa98a397a11.png)
+
+
 
 ## Installation
 
 ### Using conda
 
-**Installation**
+**Installation / Creation of conda environment**
 ```
 git clone https://github.com/nimstepf/plotting-gui.git
 cd plotting-gui
