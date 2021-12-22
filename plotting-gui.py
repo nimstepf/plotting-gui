@@ -49,7 +49,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Window Layout
         self.setWindowTitle("Harry Plotter and the Chromatography of Secrets")
         # TODO: find serious title
-        self.setWindowIcon(QtGui.QIcon('logo.svg'))
+        self.setWindowIcon(QtGui.QIcon(str(Path(__file__).parent.resolve() / "src" / "logo.svg")))
 
         self.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -119,7 +119,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.updateAct = QtWidgets.QAction("&Update", self)
         self.updateAct.setShortcut("Ctrl+U")
-        self.updateAct.triggered.connect(self.changedLabels)
+        self.updateAct.triggered.connect(self.changedLabels) # self.Themebox.currentValue()
 
         # exit function
         self.exitAct = QtWidgets.QAction("&Exit", self)
@@ -246,6 +246,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         called by: changedTitle, changedXlabel, changedYlabel, changedLabels, readData
         """
+        # close and reset plot
+        plt.close()
+        plt.clf()
+        mpl.rcParams.update(mpl.rcParamsDefault)
+
+        self.ToolbarLayout.removeWidget(self.toolbar)
+        self.PlotLayout.removeWidget(self.canv)
+
 
         # special plotting style
         if self.Nsubplots == 42:
@@ -258,14 +266,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             return None
 
         if self.filelistoflist:
-
-            # close and reset plot
-            plt.close()
-            plt.clf()
-            mpl.rcParams.update(mpl.rcParamsDefault)
-
-            self.ToolbarLayout.removeWidget(self.toolbar)
-            self.PlotLayout.removeWidget(self.canv)
 
             # use style from themebox
             if value is not None and value != "default":
@@ -682,6 +682,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.Xlist.append({i: self.datalst[j][i]["x"] for i in range(len(self.datalst[j]))})
                 self.Ylist.append({i: self.datalst[j][i]["y"] for i in range(len(self.datalst[j]))})
                 self.LEGENDS.append({i: file.stem for i, file in enumerate(self.filelistoflist[j])})
+
 
         self.Update()
 

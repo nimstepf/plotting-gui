@@ -1,0 +1,6 @@
+name: plotting-gui
+dependencies:
+  - pip:
+    - matplotlib==3.5.1
+    - numpy==1.21.4
+    - PyQt5==5.15.6
