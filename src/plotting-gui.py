@@ -2,9 +2,8 @@
 
 
 Inspired by:
+https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_qt_sgskip
 https://pyshine.com/Make-GUI-With-Matplotlib-And-PyQt5/
-https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_qt_sgskip.html#sphx-glr-gallery-user-interfaces-embedding-in-qt-sgskip-py
-https://www.pythonguis.com/tutorials/plotting-matplotlib/
 """
 
 import sys
@@ -48,7 +47,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.DEBUG = False
 
         # Window Layout
-        self.setWindowTitle("Harry Plotter and the Chromatography of Secrets") # TODO: find serious title
+        self.setWindowTitle("Harry Plotter and the Chromatography of Secrets")
+        # TODO: find serious title
         self.setWindowIcon(QtGui.QIcon('logo.svg'))
 
         self.setWindowState(QtCore.Qt.WindowMaximized)
@@ -77,11 +77,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self._createPlot()
 
         # File Explorer
-        #   initialize path
+        #   initialize values
+        self.filelst = []
+        self.filelistoflist = []
+        self.filedict = {}
+        self.delimiter = ","
         self.folderpath = None
+        self.Nsubplots = None
+        self.datalst = []
+        self.Xlist = []
+        self.Ylist = []
+        self.LEGENDS = []
 
         self._createExplorer()
-
 
         # show window
         self.show()
@@ -89,9 +97,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def _createMenu(self):
         """
         Menubar
+
+        Menu
             - open folder function
             - restart function
             - exit function
+
+        Delimiter
+            - select delimiter directly
         """
 
         # open folder function
@@ -102,33 +115,56 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # restart function
         self.restartAct = QtWidgets.QAction("&Restart", self)
         self.restartAct.setShortcut("Ctrl+R")
-        self.restartAct.triggered.connect(self.restart)
+        self.restartAct.triggered.connect(self.myRestart)
+
+        self.updateAct = QtWidgets.QAction("&Update", self)
+        self.updateAct.setShortcut("Ctrl+U")
+        self.updateAct.triggered.connect(self.changedLabels) # self.Themebox.currentValue()
 
         # exit function
         self.exitAct = QtWidgets.QAction("&Exit", self)
         self.exitAct.setShortcut("Ctrl+Q")
         self.exitAct.triggered.connect(self.close)
 
+        # select Delimiter menu
+        self.commaAct = QtWidgets.QAction('Comma ","')
+        self.commaAct.setShortcut("Ctrl+,")
+        self.commaAct.setCheckable(True)
+        self.commaAct.setChecked(True)
+
+        self.semicolonAct = QtWidgets.QAction('Semicolon ";"')
+        self.semicolonAct.setShortcut("Ctrl+;")
+        self.semicolonAct.setCheckable(True)
+
+        # group actions of Delimiter-Menu (only one selected delimiter @ time possible)
+        ag = QtWidgets.QActionGroup(self)
+        ag.addAction(self.commaAct)
+        ag.addAction(self.semicolonAct)
+
         # add functions to menubar
         self.menu = self.menuBar().addMenu("&Menu")
         self.menu.addAction(self.openAct)
+        self.menu.addAction(self.updateAct)
         self.menu.addAction(self.restartAct)
         self.menu.addAction(self.exitAct)
 
+        self.delimitermenu = self.menuBar().addMenu("&Delimiter")
+        self.delimitermenu.addAction(self.commaAct)
+        self.delimitermenu.addAction(self.semicolonAct)
 
-    def restart(self):
+    def myRestart(self):
         """
         Restart function for the Menubar
+
+        called from menu & "Ctrl+R" shortcut
         """
         os.execl(sys.executable, sys.executable, *sys.argv)
-
 
     def _createToolbar(self):
         """
         ____________________________________________________
         | ThemeBox      |  NaviBox       | Open Button     |
         |_______________|________________|_________________|
-
         """
         self.ToolbarLayout = QtWidgets.QHBoxLayout()
         self.generalLayout.addLayout(self.ToolbarLayout, 0, 0)
@@ -137,7 +173,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self._createThemeBox()
         self._createNaviBox()
         self._createOpenFolder()
-
 
     def _createThemeBox(self):
         """
@@ -150,12 +185,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                        'seaborn-darkgrid', 'seaborn-deep', 'seaborn-muted', 'seaborn-notebook',
                        'seaborn-paper', 'seaborn-pastel', 'seaborn-poster', 'seaborn-talk',
                        'seaborn-ticks', 'seaborn-white', 'seaborn-whitegrid', 'seaborn',
-                       'Solarize_Light2', 'tableau-colorblind10'] # TODO: minimize after discussion w/ users
+                       'Solarize_Light2', 'tableau-colorblind10']
+        # TODO: minimize after discussion w/ users
 
         self.ThemeBox = QtWidgets.QComboBox()
         self.ThemeBox.addItems(self.themes)
         self.ToolbarLayout.addWidget(self.ThemeBox)
-
 
     def _createNaviBox(self):
         """
@@ -165,7 +200,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.canv = MatplotlibCanvas(self)
         self.toolbar = Navi(self.canv, self._centralWidget)
         self.ToolbarLayout.addWidget(self.toolbar)
-
 
     def _createOpenFolder(self):
         """
@@ -177,12 +211,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.OpenBtnLayout.addWidget(openbtn)
         self.generalLayout.addLayout(self.OpenBtnLayout, 0, 1)
 
-
     def openfolder(self):
         """
         shows Windows Explorer Dialog to select directory
         saves directory to self.folderpath
-        connected with "Open Folder" button
+
+        connected with "Open Folder" button & "Ctrl+o" shortcut
         """
         options = QtWidgets.QFileDialog.Options()
 
@@ -196,10 +230,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if self.folderpath:
             self.UpdateTree()
 
-
     def _createPlot(self):
         """
-        Layout/placeholder for plot
+        layout/placeholder for plot
         """
         self.PlotLayout = QtWidgets.QVBoxLayout()
         self.spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -207,10 +240,25 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.generalLayout.addLayout(self.PlotLayout, 1, 0)
         self.ThemeBox.currentIndexChanged['QString'].connect(self.Update)
 
-
     def Update(self, value=None):
+        """
+        creates / updates plot with new data
+
+        called by: changedTitle, changedXlabel, changedYlabel, changedLabels, readData
+        """
+        # special plotting style
+        if self.Nsubplots == 42:
+            self.xkcdPlot()
+            return None
+
+        # special plotting style
+        if self.Nsubplots == 0:
+            self.myPlot()
+            return None
+
         if self.filelistoflist:
 
+            # close and reset plot
             plt.close()
             plt.clf()
             mpl.rcParams.update(mpl.rcParamsDefault)
@@ -218,18 +266,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ToolbarLayout.removeWidget(self.toolbar)
             self.PlotLayout.removeWidget(self.canv)
 
-            if self.Nsubplots == 42:
-                self.xkcdPlot()
-                return None
-
-            if self.Nsubplots == 0:
-                self.myPlot()
-                return None
-
+            # use style from themebox
             if value is not None and value != "default":
                 plt.style.use(value)
 
-
+            # remove toolbar & canvas
             sip.delete(self.toolbar)
             sip.delete(self.canv)
 
@@ -237,6 +278,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.canv = None
             self.PlotLayout.removeItem(self.spacerItem)
 
+            # create toolbar & canvas
             self.canv = MatplotlibCanvas(self, nsubplots=self.Nsubplots)
             self.toolbar = Navi(self.canv, self._centralWidget)
 
@@ -251,8 +293,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                       5: (204 / 255, 121 / 255, 167 / 255)}
             COLORS.update({i: "black" for i in range(6, 100)})  # unrealistic, but if more than 10 plots are needed
 
-
             if self.Nsubplots == 1:
+                # create plot
                 if value is None or value == "default":
                     [axs.plot(self.Xlist[0][i]+i*0.1, self.Ylist[0][i]+i*max(self.Ylist[0][0])/5,
                               label=self.LEGENDS[0][i], color=COLORS[i]) for i in reversed(range(len(self.Xlist[0])))]
@@ -266,13 +308,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 axs.legend(handles[::-1], labels[::-1], frameon=False).set_draggable(True)
 
             else:
+                # create subplots
                 for j in range(self.Nsubplots):
                     if value is None or value == "default":
                         [axs[j].plot(self.Xlist[j][i]+i*0.1, self.Ylist[j][i]+i*max(self.Ylist[j][0])/5,
-                                     label=self.LEGENDS[j][i], color=COLORS[i]) for i in reversed(range(len(self.Xlist[j])))]
+                                label=self.LEGENDS[j][i], color=COLORS[i]) for i in reversed(range(len(self.Xlist[j])))]
                     else:
                         [axs[j].plot(self.Xlist[j][i] + i * 0.1, self.Ylist[j][i] + i * max(self.Ylist[j][0]) / 5,
-                                     label=self.LEGENDS[j][i]) for i in reversed(range(len(self.Xlist[j])))]
+                                label=self.LEGENDS[j][i]) for i in reversed(range(len(self.Xlist[j])))]
 
                     # add legend
                     handles, labels = axs[j].get_legend_handles_labels()
@@ -287,20 +330,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                         axs[j].set_title(j+1, visible=False)
 
 
+            # set labels and title
             self.canv.fig.suptitle(self.title, fontsize=16)
             self.canv.fig.supxlabel(self.xlabel)
             self.canv.fig.supylabel(self.ylabel)
 
-
             self.canv.draw()
-
 
     def xkcdPlot(self):
         """
-        creates plot with xkcd style
+        creates plot with xkcd style (xkcdPlot class)
+
+        called by update
         """
-        #plt.clf()
-        #self.canv = None
         self.PlotLayout.removeItem(self.spacerItem)
         self.canv = xkcdPlot(self)
         self.PlotLayout.addWidget(self.canv)
@@ -308,13 +350,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ToolbarLayout.addWidget(self.toolbar)
         self.canv.draw()
 
-
     def myPlot(self):
         """
-        creates plot with my own style
+        creates plot with my own style (myPlot class)
+
+        called by update
         """
-        #plt.clf()
-        #self.canv = None
         self.PlotLayout.removeItem(self.spacerItem)
         self.canv = myPlot(self)
         self.PlotLayout.addWidget(self.canv)
@@ -322,17 +363,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ToolbarLayout.addWidget(self.toolbar)
         self.canv.draw()
 
-
     def _createExplorer(self):
         """
         _________________
-        | Tree          |
+        | setLabels     |
         |               |
+        |               |
+        | Tree          |
         |               |
         |               |
         | DragDropList  |
         |               |
         |               |
+        | SubplotList   |
         |               |
         |_______________|
         """
@@ -343,7 +386,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self._createDragDropList()
         self._createSubplots()
 
-
+        # Add scroll area to explorer
         scrollwidget = QtWidgets.QWidget()
         scrollwidget.setLayout(self.ExplorerLayout)
 
@@ -353,54 +396,69 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.generalLayout.addWidget(scroll, 1, 1)
 
-
-
-
     def _createSetLabels(self):
+        """
+        Layout to change Labels
+        """
         self.LabelGroupBox = QtWidgets.QGroupBox("Set Labels")
         self.LabelsLayout = QtWidgets.QVBoxLayout()
 
-
+        # Title
         self.titleEdit = QtWidgets.QLineEdit()
         self.titleEdit.setPlaceholderText("set title")
         self.titleEdit.editingFinished.connect(self.changedTitle)
         self.LabelsLayout.addWidget(self.titleEdit)
 
+        # x label
         self.xlabelEdit = QtWidgets.QLineEdit()
         self.xlabelEdit.setPlaceholderText("set x-axis label")
         self.xlabelEdit.editingFinished.connect(self.changedXlabel)
         self.LabelsLayout.addWidget(self.xlabelEdit)
 
+        # y label
         self.ylabelEdit = QtWidgets.QLineEdit()
         self.ylabelEdit.setPlaceholderText("set y-axis label")
         self.ylabelEdit.editingFinished.connect(self.changedYlabel)
         self.LabelsLayout.addWidget(self.ylabelEdit)
 
+        # Update button
         self.updatebtn = QtWidgets.QPushButton("Update")
-        self.updatebtn.clicked.connect(self.changedLabels)
+        self.updatebtn.clicked.connect(self.Update)
         self.LabelsLayout.addWidget(self.updatebtn)
 
         self.LabelGroupBox.setLayout(self.LabelsLayout)
         self.ExplorerLayout.addWidget(self.LabelGroupBox)
 
-
     def changedTitle(self):
+        """
+        changes plot title
+        linked with titleEdit
+        """
         self.title = self.titleEdit.text()
         self.Update()
 
-
     def changedXlabel(self):
+        """
+        changes x label
+        linked with xlabelEdit
+        """
         self.xlabel = self.xlabelEdit.text()
         self.Update()
 
     def changedYlabel(self):
+        """
+        changes y label
+        linked with ylabelEdit
+        """
         self.ylabel = self.ylabelEdit.text()
         self.Update()
 
     def changedLabels(self):
+        """
+        updates plot
+        linked with update button
+        """
         self.Update()
-
-
 
     def _createTree(self):
         """
@@ -417,14 +475,16 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.treeGroupBox.setLayout(self.treeLayout)
         self.ExplorerLayout.addWidget(self.treeGroupBox)
 
-
     def UpdateTree(self):
         """
         Creates tree from selected directory
+
+        called by openfolder
         """
         self.tree.clear()
         self.tree.setHeaderLabels([self.folderpath])
 
+        # iteration over data files
         for folderName, subfolders, filenames in os.walk(self.folderpath):
             parent = QtWidgets.QTreeWidgetItem(self.tree)
             parent.setText(0, Path(folderName).name)
@@ -441,14 +501,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             if parent.childCount() == 0:
                 parent.setHidden(True)
 
-        self.tree.setColumnWidth(0, 800) # TODO: if possible, find solution with relative values (feedback...)
-
+        self.tree.setColumnWidth(0, 800)
 
     def check_status(self):
         """
         starts when item of tree is clicked
         call/create DragDropList
         creates Plot if > 1 item is selected -> readData()
+
+        connected with tree.itemClicked
         """
         self.filelst = []
         root = self.tree.invisibleRootItem()
@@ -460,7 +521,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     self.filelst.append(item.data(0, Qt.UserRole))
 
         self.DragDropList()
-
 
     def _createDragDropList(self):
         """
@@ -483,10 +543,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ddlstGroupBox.setLayout(self.ddlstLayout)
         self.ExplorerLayout.addWidget(self.ddlstGroupBox)
 
-
     def DragDropList(self):
         """
         Creates Drag and Drop List from selected files of tree
+
+        called by check_status
         """
         self.ddlst.clear()
         self.filedict = {}
@@ -496,8 +557,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ddlst.addItem(item)
         self.ddlst.repaint()
 
-
     def _createSubplots(self):
+        """
+        Creates subplot explorer layout
+        """
         self.SubplotLayout = QtWidgets.QVBoxLayout()
         self.subplotGroupBox = QtWidgets.QGroupBox("Subplots")
         self._createSpinBox()
@@ -505,8 +568,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.subplotGroupBox.setLayout(self.SubplotLayout)
         self.ExplorerLayout.addWidget(self.subplotGroupBox)
 
-
     def _createSpinBox(self):
+        """
+        Creates spinbox to select number of subplots
+        """
         self.spinBox = QtWidgets.QSpinBox()
         self.spinBox.setValue(1)
         self.spinBox.valueChanged.connect(self.getSpinBoxvalue)
@@ -519,14 +584,21 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.NsubplotsLayout.addWidget(self.spinBox)
         self.SubplotLayout.addLayout(self.NsubplotsLayout)
 
-
     def getSpinBoxvalue(self):
+        """
+        read value from spinBox and update subplotLayout according to number of subplots
+
+        connected with spinBox.valueChanged
+        """
         self.Nsubplots = self.spinBox.value()
         [self.SubplotLayout.removeWidget(i) for i in self.subplotList]
         self._createSubplotList()
 
-
     def _createSubplotList(self):
+        """
+        Create sublayout of subplotList according to number of subplots
+        linked to getSpinBoxvalue
+        """
         self.SubplotListLayout = QtWidgets.QVBoxLayout()
 
         self.subplotList = []
@@ -547,8 +619,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.SubplotLayout.addLayout(self.SubplotListLayout)
 
-
     def updateSubplotOrder(self):
+        """
+        update order of subplots, linked to subplotList (updates if changed)
+
+        connected with various subplotList functions (rowsMoved, rowsInserted, rowsRemoved, dataChanged)
+        """
         self.filelistoflist = []
 
         for j in self.subplotList:
@@ -557,10 +633,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.readData()
 
-
     def removeItem2(self):
         """
-        delete items by doubleclicking
+        delete items of subplotLists by doubleclicking
+
+        connected with subplotList.doubleclicked
         """
         for i in self.subplotList:
             i.takeItem(i.currentRow())
@@ -568,24 +645,38 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.updateSubplotOrder()
 
-
     def deselectItem(self):
+        """
+        deselect items of subplotList
+        solves problem with deleting multiple items with doubleclick
+
+        connected with subplotList.rowsMoved
+        """
         for i in self.subplotList:
             i.setCurrentRow(-1)
-
 
     def readData(self):
         """
         read Data from selected files
         updates plot
+
+        called by updateSubplotOrder
         """
-        if self.filelistoflist != []:
+
+        # set delimiter
+        if self.commaAct.isChecked():
+            self.delimiter = ","
+        else:
+            self.delimiter = ";"
+
+        if self.filelistoflist:
             self.datalst = []
             self.Xlist = []
             self.Ylist = []
             self.LEGENDS = []
             for j in range(self.Nsubplots):
-                self.datalst.append({index: np.genfromtxt(i, delimiter=",", names=["x", "y"]) for index, i in enumerate(self.filelistoflist[:][j])})
+                self.datalst.append({index: np.genfromtxt(i, delimiter=self.delimiter, names=["x", "y"])
+                                     for index, i in enumerate(self.filelistoflist[:][j])})
 
                 self.Xlist.append({i: self.datalst[j][i]["x"] for i in range(len(self.datalst[j]))})
                 self.Ylist.append({i: self.datalst[j][i]["y"] for i in range(len(self.datalst[j]))})
@@ -597,11 +688,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 class MatplotlibCanvas(FigureCanvasQTAgg):
     """
     Class to create canvas for matplotlib subplots
+
+    inspired by https://www.pythonguis.com/tutorials/plotting-matplotlib/
     """
 
     def __init__(self, parent=None, dpi=120, nsubplots=2):
         self.nsubplots = nsubplots
 
+        # exception handling for 1 plot (no subplots)
         if nsubplots == 1:
             self.fig, self.axs = plt.subplots(1, 1)
             self.axs.spines["top"].set_visible(False)
@@ -614,7 +708,6 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
             for i in range(nsubplots):
                 self.axs[i].spines["top"].set_visible(False)
                 self.axs[i].spines["right"].set_visible(False)
-
 
                 if i != nsubplots-1:
                     self.axs[i].get_xaxis().set_visible(False)
@@ -661,6 +754,8 @@ class xkcdPlot(FigureCanvasQTAgg):
 class myPlot(FigureCanvasQTAgg):
     """
     Nicolas favored plotting style
+
+    Adapted from https://visme.co/blog/funny-graphs/
     """
     def __init__(self, parent=None, dpi=120):
         self.fig = plt.figure()
@@ -668,24 +763,24 @@ class myPlot(FigureCanvasQTAgg):
         self.ax.axis('off')
         self.fig.suptitle("my charts and graphs are:", size=20)
 
-        self.ax.arrow(0, 1, 0, -2, color='black', head_length = 0.07, head_width = 0.05, length_includes_head = True)
-        self.ax.arrow(0, -1, 0, 2, color='black', head_length = 0.07, head_width = 0.05, length_includes_head = True)
-        self.ax.arrow(1, 0, -2, 0, color='black', head_length = 0.07, head_width = 0.05, length_includes_head = True)
-        self.ax.arrow(-1, 0, 2, 0, color='black', head_length = 0.07, head_width = 0.05, length_includes_head = True)
+        self.ax.arrow(0, 1, 0, -2, color='black', head_length=0.07, head_width=0.05, length_includes_head=True)
+        self.ax.arrow(0, -1, 0, 2, color='black', head_length=0.07, head_width=0.05, length_includes_head=True)
+        self.ax.arrow(1, 0, -2, 0, color='black', head_length=0.07, head_width=0.05, length_includes_head=True)
+        self.ax.arrow(-1, 0, 2, 0, color='black', head_length=0.07, head_width=0.05, length_includes_head=True)
 
         self.ax.text(0.5, 1, 'Easy to comprehend', horizontalalignment='center', size=16,
-                 verticalalignment='center', transform=self.ax.transAxes)
+                     verticalalignment='center', transform=self.ax.transAxes)
         self.ax.text(0.5, 0, 'Hard to comprehend', horizontalalignment='center', size=16,
-                 verticalalignment='center', transform=self.ax.transAxes)
+                     verticalalignment='center', transform=self.ax.transAxes)
         self.ax.text(0, 0.5, 'Boring', horizontalalignment='center', size=16,
-                 verticalalignment='center', transform=self.ax.transAxes, rotation='vertical')
+                     verticalalignment='center', transform=self.ax.transAxes, rotation='vertical')
         self.ax.text(1, 0.5, 'Fascinating', horizontalalignment='center', size=16,
-                 verticalalignment='center', transform=self.ax.transAxes, rotation=270)
+                     verticalalignment='center', transform=self.ax.transAxes, rotation=270)
 
-        self.ax.plot(0.7,0.7,'co', markersize=20)
-        self.ax.text(0.62,0.76,'My perception', size=12)
-        self.ax.plot(-0.7,-0.7,'mo', markersize=20)
-        self.ax.text(-0.78,-0.78,'Everyone else', size=12)
+        self.ax.plot(0.7, 0.7, 'co', markersize=20)
+        self.ax.text(0.62, 0.76, 'My perception', size=12)
+        self.ax.plot(-0.7, -0.7, 'mo', markersize=20)
+        self.ax.text(-0.78, -0.78, 'Everyone else', size=12)
 
         super(myPlot, self).__init__(self.fig)
 
