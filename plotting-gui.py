@@ -246,6 +246,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         called by: changedTitle, changedXlabel, changedYlabel, changedLabels, readData
         """
+        value = self.ThemeBox.currentText()
+
         # close and reset plot
         plt.close()
         plt.clf()
